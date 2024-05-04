@@ -1,10 +1,7 @@
 package org.bits.fsad.assessment.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.bits.fsad.assessment.dto.AssessmentRequest;
-import org.bits.fsad.assessment.dto.AssessmentResponse;
-import org.bits.fsad.assessment.dto.AssignmentResponse;
-import org.bits.fsad.assessment.dto.QuestionWithAttemptId;
+import org.bits.fsad.assessment.dto.*;
 import org.bits.fsad.assessment.pojo.Question;
 import org.bits.fsad.assessment.services.AssessmentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +44,9 @@ public class AssessmentController {
 
 
     @PostMapping
-    public ResponseEntity<String> submitAssessment(@RequestBody AssessmentResponse assessmentResponse) throws JsonProcessingException {
-        int score=assessmentService.calculateScore(assessmentResponse);
-        return ResponseEntity.ok("Here is the "+score);
+    public ResponseEntity<AssessmentResult> submitAssessment(@RequestBody AssessmentResponse assessmentResponse) throws JsonProcessingException {
+        AssessmentResult rsponse = assessmentService.calculateScore(assessmentResponse);
+        return ResponseEntity.ok(rsponse);
     }
 
 }

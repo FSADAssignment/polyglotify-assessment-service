@@ -11,6 +11,7 @@ import org.bits.fsad.assessment.entity.AssessmentResponseEntity;
 import org.bits.fsad.assessment.entity.Score;
 import org.bits.fsad.assessment.entity.UserTestAttempt;
 import org.bits.fsad.assessment.pojo.Question;
+import org.bits.fsad.assessment.pojo.QuestionCacheEntry;
 import org.bits.fsad.assessment.repository.AssessmentRepository;
 import org.bits.fsad.assessment.repository.AssessmentResponseRepository;
 import org.bits.fsad.assessment.repository.ScoreRepository;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,10 +101,7 @@ public class AssessmentService {
 
     }
 
-//    private String generateRedisKey(AssessmentRequest request) {
-////        return String.format("%s_%s_%s_%s", request.getUsername(), request.getLanguage(),
-////                request.getSubcategory(), request.getLevel());
-//    }
+
 
 
     public List<AssignmentResponse> getAvailableAssignmentsForLanguageAndUser(String language, String userId) {
@@ -142,6 +141,8 @@ public class AssessmentService {
     }
 
 
+
+
     private void updateCache(List<Question> questions) {
         Cache questionCache = cacheManager.getCache("questionCache");
         if (questionCache != null) {
@@ -149,60 +150,84 @@ public class AssessmentService {
                 String questionId = question.getId();
                 Integer correctOptionIndex = question.getCorrectOptionIndex();
                 if (questionId != null && correctOptionIndex != null) {
-                    questionCache.put(questionId, correctOptionIndex);
+                    String cacheEntry = createCacheEntryJson(question.getQuestionText(), question.getOptions(), correctOptionIndex);
+                    questionCache.put(questionId, cacheEntry);
                 }
             }
         }
     }
 
+    private String createCacheEntryJson(String questionText, List<String> options, Integer correctOptionIndex) {
+        try {
+            QuestionCacheEntry cacheEntry = new QuestionCacheEntry(questionText, options, correctOptionIndex);
+            return objectMapper.writeValueAsString(cacheEntry);
+        } catch (JsonProcessingException e) {
+            // Handle JSON processing exception
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-    public int calculateScore(AssessmentResponse assessmentResponse) throws JsonProcessingException {
+
+    public AssessmentResult calculateScore(AssessmentResponse assessmentResponse) throws JsonProcessingException {
         int score = 0;
         List<QuestionResponse> questionResponses = assessmentResponse.getAnswers();
-        List<QuestionWithCorrectAnswer> questionsWithAnswers = new ArrayList<>();
+        List<QuestionWithCorrectAnswerDTO> questionsWithAnswers = new ArrayList<>();
 
         for (QuestionResponse questionResponse : questionResponses) {
             String questionId = questionResponse.getQuestionId();
             int selectedOptionIndex = questionResponse.getSelectedOptionIndex();
 
-            // Retrieve the correct option index from the cache
+            // Retrieve the correct option index and question details from the cache
             Cache questionCache = cacheManager.getCache("questionCache");
-            Integer correctOptionIndex = questionCache != null ? questionCache.get(questionId, Integer.class) : null;
+            String cacheEntryJson = questionCache != null ? questionCache.get(questionId, String.class) : null;
 
-            // Create a new object to hold question, selected option, and correct option
-            QuestionWithCorrectAnswer questionWithAnswer = new QuestionWithCorrectAnswer();
-            questionWithAnswer.setQuestionId(questionId);
-            questionWithAnswer.setSelectedOptionIndex(selectedOptionIndex);
-            questionWithAnswer.setCorrectOptionIndex(correctOptionIndex);
+            if (cacheEntryJson != null) {
+                try {
+                    // Deserialize the cache entry JSON string into QuestionCacheEntry object
+                    QuestionCacheEntry cacheEntry = objectMapper.readValue(cacheEntryJson, QuestionCacheEntry.class);
 
-            questionsWithAnswers.add(questionWithAnswer);
+                    // Create a new object to hold question, selected option, and correct option
+                    QuestionWithCorrectAnswerDTO questionWithAnswer = new QuestionWithCorrectAnswerDTO();
+                    questionWithAnswer.setQuestionId(questionId);
+                    questionWithAnswer.setQuestionText(cacheEntry.getQuestionText());
+                    questionWithAnswer.setOptions(cacheEntry.getOptions());
+                    questionWithAnswer.setUserSelectedOptionIndex(selectedOptionIndex);
+                    questionWithAnswer.setCorrectOptionIndex(cacheEntry.getCorrectOptionIndex());
 
-            // If the correct option index is retrieved from the cache and matches the user's selected option index, increment the score
-            if (correctOptionIndex != null && selectedOptionIndex == correctOptionIndex) {
-                score++;
+                    questionsWithAnswers.add(questionWithAnswer);
+
+                    // If the correct option index is retrieved from the cache and matches the user's selected option index, increment the score
+                    if (cacheEntry.getCorrectOptionIndex() != null && selectedOptionIndex == cacheEntry.getCorrectOptionIndex()) {
+                        score++;
+                    }
+                } catch (IOException e) {
+                    // Handle JSON processing exception
+                    e.printStackTrace();
+                }
             }
         }
 
         // Save assessment response with questions and correct answers
-        AssessmentResponseWithAnswers responseWithAnswers = new AssessmentResponseWithAnswers();
-        responseWithAnswers.setAttemptId(assessmentResponse.getAttemptId());
-        responseWithAnswers.setUserId(assessmentResponse.getUserId());
-        responseWithAnswers.setAssessmentId(assessmentResponse.getAssessmentId());
-        responseWithAnswers.setQuestionsWithAnswers(questionsWithAnswers);
+        AssessmentResult assessmentResult = new AssessmentResult();
+        assessmentResult.setUserId(assessmentResponse.getUserId());
+        assessmentResult.setAttemptId(assessmentResponse.getAttemptId());
+        assessmentResult.setAssessmentId(assessmentResponse.getAssessmentId());
+        assessmentResult.setScore(score);
+        assessmentResult.setQuestions(questionsWithAnswers);
 
-        saveAssessmentResponse(responseWithAnswers);
-        updateScore(assessmentResponse.getUserId(),assessmentResponse.getAssessmentId(),score);
+        saveAssessmentResponse(assessmentResult);
 
-        return score;
+        return assessmentResult;
     }
 
-    public void saveAssessmentResponse(AssessmentResponseWithAnswers assessmentResponseWithAnswers) throws JsonProcessingException {
+    public void saveAssessmentResponse(AssessmentResult assessmentResult) throws JsonProcessingException {
         AssessmentResponseEntity entity = new AssessmentResponseEntity();
-        entity.setAttemptId(assessmentResponseWithAnswers.getAttemptId());
-        entity.setUserId(assessmentResponseWithAnswers.getUserId());
-        entity.setAssessmentId(assessmentResponseWithAnswers.getAssessmentId());
+        entity.setAttemptId(assessmentResult.getAttemptId());
+        entity.setUserId(assessmentResult.getUserId());
+        entity.setAssessmentId(assessmentResult.getAssessmentId());
 
-        entity.setResponseData(objectMapper.writeValueAsString(assessmentResponseWithAnswers.getQuestionsWithAnswers()));
+        entity.setResponseData(objectMapper.writeValueAsString(assessmentResult.getQuestions()));
         entity.setCreatedAt(LocalDateTime.now());
         assessmentResponseRepository.save(entity);
     }
@@ -218,6 +243,4 @@ public class AssessmentService {
         // Save the updated or new score entry
         scoreRepository.save(scoreEntity);
     }
-
-
 }
