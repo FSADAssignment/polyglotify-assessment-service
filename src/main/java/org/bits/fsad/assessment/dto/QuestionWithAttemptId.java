@@ -10,9 +10,11 @@ import java.util.List;
 public class QuestionWithAttemptId {
     private List<QuestionDTO> questions;
     private Long attemptId;
+    private Long assessmentId;
 
-    public QuestionWithAttemptId(List<QuestionDTO> questions, Long attemptId) {
+    public QuestionWithAttemptId(List<QuestionDTO> questions, Long attemptId, Long assessmentId) {
         this.questions = questions;
         this.attemptId = attemptId;
+        this.assessmentId=assessmentId;
     }
 }

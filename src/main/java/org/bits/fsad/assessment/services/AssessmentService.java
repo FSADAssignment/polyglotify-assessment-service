@@ -96,7 +96,7 @@ public class AssessmentService {
             questionDTOs.add(questionDTO);
         }
 
-        return new QuestionWithAttemptId(questionDTOs, attemptId);
+        return new QuestionWithAttemptId(questionDTOs, attemptId,assessment_id);
 
 
     }
@@ -208,6 +208,8 @@ public class AssessmentService {
             }
         }
 
+        updateScore(assessmentResponse.getUserId(),assessmentResponse.getAssessmentId(),score);
+
         // Save assessment response with questions and correct answers
         AssessmentResult assessmentResult = new AssessmentResult();
         assessmentResult.setUserId(assessmentResponse.getUserId());
@@ -239,8 +241,6 @@ public class AssessmentService {
         scoreEntity.setAssessmentId(assessmentId);
         scoreEntity.setScore(score);
 
-
-        // Save the updated or new score entry
-        scoreRepository.save(scoreEntity);
+       scoreRepository.save(scoreEntity);
     }
 }
