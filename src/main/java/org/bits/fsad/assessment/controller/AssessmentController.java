@@ -49,7 +49,7 @@ public class AssessmentController {
     @PostMapping
     public ResponseEntity<String> submitAssessment(@RequestBody AssessmentResponse assessmentResponse) throws JsonProcessingException {
         int score=assessmentService.calculateScore(assessmentResponse);
-        return ResponseEntity.ok("Assessment submitted successfully"+score);
+        return ResponseEntity.ok("Here is the "+score);
     }
 
 }

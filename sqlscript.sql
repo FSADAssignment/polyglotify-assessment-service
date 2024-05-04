@@ -15,6 +15,16 @@ CREATE TABLE assessment_response (
     created_at TIMESTAMP
 );
 
+
+INSERT INTO assessments (title, description, language, difficulty_level)
+VALUES
+    ('vocab', 'Test your English language proficiency.', 'en', 'high'),
+    ('vocab', 'Test your French vocabulary knowledge.', 'es', 'high'),
+    ('vocab', 'Test your Spanish grammar skills.', 'es', 'medium'),
+    ('vocab', 'Test your English language proficiency.', 'en', 'medium'),
+    ('vocab', 'Test your English language proficiency.', 'en', 'low');
+
+
 CREATE TABLE scores (
     score_id SERIAL PRIMARY KEY,
     user_id VARCHAR(50) NOT NULL,
