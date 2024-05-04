@@ -27,5 +27,5 @@ public class AssignmentResponse {
         this.attempted = attempted;
     }
 
-    // Constructors, getters, and setters
+
 }

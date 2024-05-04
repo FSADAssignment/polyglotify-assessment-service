@@ -26,5 +26,5 @@ public class UserTestAttempt {
     @Column(nullable = false)
     private boolean attempted;
 
-    // Constructors, getters, and setters
+
 }

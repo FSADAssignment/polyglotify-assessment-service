@@ -8,4 +8,6 @@ import java.util.List;
 public class AssessmentResponse {
     private Long attemptId;
     private List<QuestionResponse> answers;
+    private String userId;
+    private Long assessmentId;
 }

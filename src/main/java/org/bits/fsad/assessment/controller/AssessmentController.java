@@ -1,5 +1,6 @@
 package org.bits.fsad.assessment.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.bits.fsad.assessment.dto.AssessmentRequest;
 import org.bits.fsad.assessment.dto.AssessmentResponse;
 import org.bits.fsad.assessment.dto.AssignmentResponse;
@@ -46,9 +47,9 @@ public class AssessmentController {
 
 
     @PostMapping
-    public ResponseEntity<String> submitAssessment(@RequestBody AssessmentResponse assessmentResponse) {
-        // Here you can handle the assessment submission logic
-        return ResponseEntity.ok("Assessment submitted successfully");
+    public ResponseEntity<String> submitAssessment(@RequestBody AssessmentResponse assessmentResponse) throws JsonProcessingException {
+        int score=assessmentService.calculateScore(assessmentResponse);
+        return ResponseEntity.ok("Assessment submitted successfully"+score);
     }
 
 }

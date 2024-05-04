@@ -22,19 +22,18 @@ CREATE TABLE questions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE responses (
-    response_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id),
-    assessment_id INT REFERENCES assessments(assessment_id),
-    question_id INT REFERENCES questions(question_id),
-    response_text TEXT,
-    is_correct BOOLEAN,
+CREATE TABLE assessment_response (
+    id SERIAL PRIMARY KEY,
+    attempt_id BIGINT,
+    user_id VARCHAR(255),
+    assessment_id BIGINT,
+    response_data JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE scores (
     score_id SERIAL PRIMARY KEY,
-    user_id INT REFERENCES users(user_id),
+    user_id VARCHAR(50)
     assessment_id INT REFERENCES assessments(assessment_id),
     score INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
