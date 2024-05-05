@@ -16,16 +16,7 @@ CREATE TABLE assessment_response (
 );
 
 
-INSERT INTO assessments (title, description, language, difficulty_level)
-VALUES
-    ('vocab', 'Test your English language proficiency.', 'en', 'high'),
-    ('vocab', 'Test your French vocabulary knowledge.', 'fr', 'high'),
-    ('vocab', 'Test your Spanish grammar skills.', 'es', 'high'),
-    ('vocab', 'Test your English language proficiency.', 'en', 'medium'),
-    ('vocab', 'Test your French vocabulary knowledge.', 'fr', 'medium'),
-    ('vocab', 'Test your Spanish grammar skills.', 'es', 'medium'),('vocab', 'Test your English language proficiency.', 'en', 'high'),
-    ('vocab', 'Test your French vocabulary knowledge.', 'fr', 'low'),
-    ('vocab', 'Test your Spanish grammar skills.', 'es', 'low');
+
 
 
 CREATE TABLE scores (
@@ -44,3 +35,15 @@ CREATE TABLE user_test_attempts (
     attempted BOOLEAN NOT NULL,
     FOREIGN KEY (assessment_id) REFERENCES assessments(assessment_id)
 );
+
+
+INSERT INTO assessments (title, description, language, difficulty_level)
+VALUES
+    ('vocab', 'Test your English language proficiency.', 'en', 'high'),
+    ('vocab', 'Test your French vocabulary knowledge.', 'fr', 'high'),
+    ('vocab', 'Test your Spanish grammar skills.', 'es', 'high'),
+    ('vocab', 'Test your English language proficiency.', 'en', 'medium'),
+    ('vocab', 'Test your French vocabulary knowledge.', 'fr', 'medium'),
+    ('vocab', 'Test your Spanish grammar skills.', 'es', 'medium'),('vocab', 'Test your English language proficiency.', 'en', 'high'),
+    ('vocab', 'Test your French vocabulary knowledge.', 'fr', 'low'),
+    ('vocab', 'Test your Spanish grammar skills.', 'es', 'low');
