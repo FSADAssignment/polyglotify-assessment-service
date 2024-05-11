@@ -18,6 +18,7 @@ public class AssessmentController {
     private AssessmentService assessmentService;
 
     @GetMapping
+    @CrossOrigin(origins = "http://localhost:4200")
     public ResponseEntity<QuestionWithAttemptId> fetchQuestions(
             @RequestParam String username,
             @RequestParam String language,
@@ -34,6 +35,7 @@ public class AssessmentController {
     }
 
 
+    @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/available")
     public ResponseEntity<List<AssignmentResponse>> getAvailableAssignments(
             @RequestParam String language,
@@ -42,7 +44,7 @@ public class AssessmentController {
         return ResponseEntity.ok(availableAssignments);
     }
 
-
+    @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping
     public ResponseEntity<AssessmentResult> submitAssessment(@RequestBody AssessmentResponse assessmentResponse) throws JsonProcessingException {
         AssessmentResult rsponse = assessmentService.calculateScore(assessmentResponse);
