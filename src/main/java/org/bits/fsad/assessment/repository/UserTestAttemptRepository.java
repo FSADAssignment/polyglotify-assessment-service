@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface UserTestAttemptRepository extends JpaRepository<UserTestAttempt, Long> {
     boolean existsByUserIdAndAssessmentId(String userId, Long assessmentId);
+    List<UserTestAttempt> findByUserIdAndAttemptedIsTrue(String userId);
+
 }

@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -296,4 +297,29 @@ public class AssessmentService {
 
         scoreRepository.save(scoreEntity);
     }
+
+    public double calculateProgress(String username, String language) {
+        // Step 1: Find all the assessment IDs for the given language
+        List<Assessment> assessmentsForLanguage = assessmentRepository.findByLanguage(language);
+        Set<Long> assessmentIdsForLanguage = assessmentsForLanguage.stream()
+                .map(Assessment::getAssessmentId)
+                .collect(Collectors.toSet());
+
+        // Step 2: Filter the UserTestAttempt entries by the assessment IDs and the user ID
+        List<UserTestAttempt> userAttemptsForLanguage = userTestAttemptRepository.findByUserIdAndAttemptedIsTrue(username);
+        Set<Long> uniqueCompletedAssessmentIds = userAttemptsForLanguage.stream()
+                .filter(attempt -> assessmentIdsForLanguage.contains(attempt.getAssessmentId()))
+                .map(UserTestAttempt::getAssessmentId)
+                .collect(Collectors.toSet());
+
+        // Step 3: Count the number of unique assessment IDs found in the filtered UserTestAttempt entries
+        int completedAssessmentCount = uniqueCompletedAssessmentIds.size();
+
+        // Calculate the progress percentage
+        double progressPercentage = (double) completedAssessmentCount / assessmentIdsForLanguage.size() * 100;
+
+        return progressPercentage;
+    }
+
+
 }

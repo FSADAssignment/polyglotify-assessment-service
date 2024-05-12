@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/assessment")
 public class AssessmentController {
 
@@ -18,8 +19,7 @@ public class AssessmentController {
     private AssessmentService assessmentService;
 
     @GetMapping
-    @CrossOrigin(origins = "http://localhost:4200")
-    public ResponseEntity<QuestionWithAttemptId> fetchQuestions(
+       public ResponseEntity<QuestionWithAttemptId> fetchQuestions(
             @RequestParam String username,
             @RequestParam String language,
             @RequestParam String subcategory,
@@ -35,7 +35,7 @@ public class AssessmentController {
     }
 
 
-    @CrossOrigin(origins = "http://localhost:4200")
+
     @GetMapping("/available")
     public ResponseEntity<List<AssignmentResponse>> getAvailableAssignments(
             @RequestParam String language,
@@ -44,10 +44,17 @@ public class AssessmentController {
         return ResponseEntity.ok(availableAssignments);
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
+
     @PostMapping
     public ResponseEntity<AssessmentResult> submitAssessment(@RequestBody AssessmentResponse assessmentResponse) throws JsonProcessingException {
         AssessmentResult rsponse = assessmentService.calculateScore(assessmentResponse);
+        return ResponseEntity.ok(rsponse);
+    }
+
+    @GetMapping("/progress")
+        public ResponseEntity<Double> progress(@RequestParam String username,
+                                                         @RequestParam String language) throws JsonProcessingException {
+        double rsponse = assessmentService.calculateProgress(username, language);
         return ResponseEntity.ok(rsponse);
     }
 
